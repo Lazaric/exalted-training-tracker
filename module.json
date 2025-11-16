@@ -1,0 +1,30 @@
+{
+  "id": "exalted-training-tracker",
+  "type": "module",
+  "title": "Lazaric's Exalted 3e Training Tracker",
+  "description": "Adds a Training & XP tab to Exalted 3e character sheets, including training entries, XP totals, calendar integration, chat output, and import/export.",
+  "version": "0.0.1",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "Lazaric",
+      "url": "https://github.com/Lazaric",
+      "discord": ""
+    }
+  ],
+  "esmodules": [
+    "scripts/training-tab.js"
+  ],
+  "styles": [
+    "styles/training-tab.css"
+  ],
+  "packs": [],
+  "languages": [],
+  "url": "http://example.com",
+  "manifest": "http://example.com/module.json",
+  "download": "http://example.com/exalted-training-tracker.zip",
+  "systems": ["exaltedthird"]
+}

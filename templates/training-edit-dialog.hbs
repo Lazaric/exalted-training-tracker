@@ -1,0 +1,42 @@
+<section class="training-edit-dialog">
+
+  <div class="form-group">
+    <label>Name</label>
+    <input type="text" name="name" value="{{item.name}}" />
+  </div>
+
+  <div class="form-group">
+    <label>XP Cost</label>
+    <input type="number" name="xpCost" value="{{item.xpCost}}" />
+  </div>
+
+  <div class="form-group">
+    <label>XP Source</label>
+    <select name="xpSource">
+      <option value="standard" {{#if (eq item.xpSource "standard")}}selected{{/if}}>Standard</option>
+      <option value="exalt" {{#if (eq item.xpSource "exalt")}}selected{{/if}}>Exalt</option>
+      <option value="mandate" {{#if (eq item.xpSource "mandate")}}selected{{/if}}>Mandate</option>
+      <option value="bonus" {{#if (eq item.xpSource "bonus")}}selected{{/if}}>Bonus Points</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Total Days</label>
+    <input type="number" name="totalDays" value="{{item.totalDays}}" />
+  </div>
+
+  <div class="form-group">
+    <label>Start Date</label>
+    <input type="text" name="startDate" value="{{item.startDate}}" />
+  </div>
+
+  <div class="form-group">
+    <label>Notes</label>
+    <textarea name="notes">{{item.notes}}</textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Created Date</label>
+    <input type="text" name="createDate" value="{{item.createDate}}" />
+  </div>
+</section>

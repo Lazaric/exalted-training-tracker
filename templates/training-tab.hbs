@@ -1,0 +1,121 @@
+{{!-- ============================================================
+     Exalted 3e - Training Tracker
+     This is a V2 Application PART template
+     IMPORTANT: data-part="training" must match PARTS.training.id
+   ============================================================ --}}
+
+<section class="training-part" data-tab="training">
+
+<section class="training-core-xp">
+  <h3>Experience Pools</h3>
+  <div class="core-xp-row">
+    <!-- STANDARD XP -->
+    <div class="core-xp-item">
+      <label>Standard XP:</label>
+      <input type="number"
+             class="core-xp-input"
+             data-xp-type="standard"
+             value="{{system.experience.standard.value}}" />
+    </div>
+    <!-- EXALT XP -->
+    <div class="core-xp-item">
+      <label>Exalt XP:</label>
+      <input type="number"
+             class="core-xp-input"
+             data-xp-type="exalt"
+             value="{{system.experience.exalt.value}}" />
+    </div>
+    <!-- MANDATE XP -->
+    <div class="core-xp-item">
+      <label>Mandate XP:</label>
+      <input type="number"
+             class="custom-xp-input"
+             data-custom="mandate"
+             value="{{customXP.mandate}}" />
+    </div>
+    <!-- BONUS POINTS -->
+    <div class="core-xp-item">
+      <label>Bonus Points:</label>
+      <input type="number"
+             class="custom-xp-input"
+             data-custom="bonus"
+             value="{{customXP.bonus}}" />
+    </div>
+  </div>
+  <div class="xpTotalsRow">    
+      <div class="xpTotal">{{xpTotals.standard.spent}} / {{xpTotals.standard.available}}</div>
+      <div class="xpTotal">{{xpTotals.exalt.spent}} / {{xpTotals.exalt.available}}</div>
+      <div class="xpTotal">{{xpTotals.mandate.spent}} / {{xpTotals.mandate.available}}</div>
+      <div class="xpTotal">{{xpTotals.bonus.spent}} / {{xpTotals.bonus.available}}</div>    
+  </div>
+  <label>spent/available</label>
+</section>
+
+  {{!-- ============================
+        TRAINING TABLE
+        ============================ 
+        --}}
+ <section class="training-items-section">
+
+  <div class="trainingHeader">
+    <h3>Training Projects</h3>
+
+    <div class="trainingSortBar ml-auto">
+      <button class="event_SortCycle sortButtonLabel">
+        <span class="sortButtonName"> Sort Mode </span>
+        <span class="sortLabel">{{sortMode}}</span>
+      </button>
+      
+    </div>
+
+    <button class="trainingButton add event_trainingAdd">+ Add Training</button>
+    <button class="training-export event_TrainingExport">⬆ Export</button>
+    <button class="training-import event_TrainingImport">⬇ Import</button>
+  </div>
+
+  <div class="training-card-grid">
+
+    {{#each items as |item|}}
+      <div class="training-card {{#if item.completed}}completed{{else}}incomplete{{/if}}" data-training-id="{{item.id}}">
+
+        <div class="training-card-header {{#if item.completed}}completed{{else}}incomplete{{/if}}">
+          <strong>{{item.name}}</strong>
+        </div>
+
+        <div class="trainingCardBody mt-zero ">
+          <div class="labelRow"><label class="bold">XP Cost:</label> <span>{{item.xpCost}}</span> </div>
+          <div class="labelRow"><label class="bold">Source:</label> <span>{{item.xpSource}}</span> </div>
+
+          <div class="labelRow"><label class="bold">Required:</label> <span>{{item.totalDays}}</span> </div>
+          <div class="labelRow"><label class="bold">Completed:</label> <span>{{item.daysCompleted}}</span> </div>
+
+          <div class="labelRow">{{item.startDate}}</div>
+
+          <div class="labelRow">{{item.createdDate}}</div>
+
+          {{#unless item.completed}}
+          <div class="trainingIncrementButtons mt-auto">
+            <button class="inc-training event_IncTraining" data-inc="1">+1</button>
+            <button class="inc-training event_IncTraining" data-inc="7">+7</button>
+            <button class="inc-training event_IncTraining" data-inc="28">+28</button>
+          </div>
+
+          <button class="trainingButton complete event_TrainingComplete">Mark Complete</button>
+          <button class="trainingButton edit event_TrainingEdit">Edit</button>
+          {{/unless}}
+
+          {{#if item.completed}}
+          <div class="completed-marker mt-auto">Completed</div>
+          {{/if}}
+          
+          
+          <button class="trainingButton delete event_TrainingDelete">Delete</button>
+        </div>
+
+      </div>
+    {{/each}}
+
+  </div>
+</section>
+
+</section>
