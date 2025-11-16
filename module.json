@@ -23,8 +23,11 @@
   ],
   "packs": [],
   "languages": [],
-  "url": "http://example.com",
-  "manifest": "http://example.com/module.json",
-  "download": "http://example.com/exalted-training-tracker.zip",
+  "url": "https://github.com/Lazaric/exalted-training-tracker",
+  "manifest": "https://github.com/Lazaric/exalted-training-tracker/releases/latest/download/module.json",
+  "download": "https://github.com/Lazaric/exalted-training-tracker/releases/latest/download/exalted-training-tracker.zip",
+  "changelog": "https://github.com/lazaric/exalted-training-tracker/releases/tag/0.0.1"
+}
   "systems": ["exaltedthird"]
 }
+
