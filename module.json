@@ -12,7 +12,7 @@
     {
       "name": "Lazaric",
       "url": "https://github.com/Lazaric",
-      "discord": ""
+      "discord": ".lazaric"
     }
   ],
   "scripts" : ["scripts/training-tab.js"],

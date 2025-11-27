@@ -1,4 +1,4 @@
-// training-tab.js
+// TRAINING TRACKER 
 Hooks.once("init", () => {
   const link = document.createElement("link");
   link.rel = "stylesheet";
