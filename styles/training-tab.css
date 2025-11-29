@@ -3,6 +3,16 @@
   margin-bottom: 1.5rem;
 }
 
+.form-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+.form-group.label {
+  white-space: nowrap;
+  min-width: 45px;
+}
+
 h3 {
   color: var(--input-background-color);
 }
@@ -12,7 +22,7 @@ h3 {
   justify-content: space-between;
   width: 100%;
 }
-.core-xp-item{ 
+.core-xp-item{
   display:flex;
   flex-direction: column;
   align-items: center;
@@ -195,11 +205,11 @@ border: 1px solid #666;
   max-width: 150px;
   width: 150px;
   text-align: center;
-} 
+}
 
 .trainingSortBar{
   display: flex;
-  flex-direction: row;  
+  flex-direction: row;
   align-items: center;
 }
 .sortButtonLabel{
@@ -211,12 +221,6 @@ border: 1px solid #666;
 .sortLabel{
   font-size:8pt
 }
-
-
-/* UNSORTED  */
-
-
-
 
 
 .training-tracker {
@@ -294,15 +298,6 @@ border: 1px solid #666;
   margin-top: 1.5rem;
 }
 
-
-
-
-
-
-
-
-
-
 .delete-training-button.danger {
   width: 100%;
   margin-top: 6px;
@@ -312,4 +307,62 @@ border: 1px solid #666;
 }
 .delete-training-button:hover {
   filter: brightness(1.15);
+}
+
+/*
+ training options dropdown
+ */
+/* Container */
+.training-menu-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 6px;
+}
+
+/* Three-dots button */
+.training-menu-button {
+  background: var(--color-border-light-primary);
+  color: var(--input-background-color);
+  border: 1px solid var(--color-border-dark-4);
+  /* padding: 4px 8px; */
+  border-radius: 4px;
+  cursor: pointer;
+  /* font-size: 20px; */
+  line-height: 14px;
+}
+
+/* Dropdown */
+.training-menu-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background: var(--color-bg-dark-2);
+  border: 1px solid var(--color-border-dark-3);
+  border-radius: 4px;
+  padding: 4px 0;
+  z-index: 1000;
+  min-width: 180px;
+}
+
+/* Dropdown visible state */
+.training-menu-container.open .training-menu-dropdown {
+  display: block;
+  background-color: palegoldenrod;
+  border: 1pt solid brown;
+}
+
+/* Items */
+.dropdown-item {
+  width: 100%;
+  padding: 6px 12px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--color-text-light-primary);
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: var(--color-bg-dark-4);
 }
