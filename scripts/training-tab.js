@@ -364,6 +364,16 @@ function activateTrainingListeners(app, html, actor) {
     }
   });
 
+  /* --------------------------------------------------------
+   * BULK SET START DATES / CREATED DATES / COMPLETE ALL
+   * -------------------------------------------------------- */
+  html.find(".event_BulkDateSet").off("click.training");
+  html.find(".event_BulkDateSet").on("click.training", async () => {
+
+    await handleBulkTrainingEdit(actor, app, html);
+  });
+
+
 } // end activateTrainingListeners
 
 /* -------------------------------------------------------------
@@ -849,4 +859,72 @@ function normalizeDate(value) {
 async function confirmIfEnabled(app, actor, message) {
   if (app._trainingHideConfirmActions) return true;
   return window.confirm(message);
+}
+
+/* --------------------------------------------------------
+ * BULK TRAINING EDIT — Operational Logic (DialogV2 Safe)
+ *
+ *     content: `
+            <form class="bulk-edit-form">
+                <div style="margin-bottom:10px;">
+                  <label><strong>New Start Date</strong>:</label>
+                  <input type="text" name="bulkStart" style="width:100%;" />
+                </div>
+
+                <div>
+                  <label><input type="checkbox" name="setCreated" /> Replace Created Dates</label>
+                </div>
+
+                <div>
+                  <label><input type="checkbox" name="markCompleted" /> Mark ALL as Completed</label>
+                </div>
+            </form>
+        `,
+        *
+        *
+        *   console.log("dialogHtml", dialogEl);
+ * -------------------------------------------------------- */
+async function handleBulkTrainingEdit(actor, app, html) {
+
+  // Render simple dialog form
+  const dialogHtml = await foundry.applications.handlebars.renderTemplate(
+      "modules/exalted-training-tracker/templates/bulk-edit.hbs",
+      {}
+  );
+  let dialogEl = null;
+  // Open the dialog
+  const result = await foundry.applications.api.DialogV2.prompt({
+    window: { title: "Bulk Edit Training" },
+    content: dialogHtml,
+    render: (ctx) => { dialogEl = ctx.element[0]; },
+    buttons: [
+      { label: "Apply", action: "ok", default: true },
+      { label: "Cancel", action: "cancel" }
+    ]
+  });
+
+  // Cancel clicked? stop
+  if (result !== "ok" || !dialogEl) return;
+
+  const form = dialogEl.querySelector(".bulk-edit-form");
+  if (!form) return;
+
+  const newStart      = form.querySelector("[name='bulkStart']")?.value.trim() || "";
+  const setCreated = form.querySelector("[name='bulkCreated']").checked;
+  const markCompleted = form.querySelector("[name='bulkComplete']")?.checked || false;
+
+  // Load training data
+  const flags = await getActorTrainingData(actor);
+
+  // Apply changes
+  for (const t of flags.items) {
+    if (newStart)   t.startDate   = newStart;
+    if (setCreated) item.createdDate = new Date().toISOString();
+    if (markCompleted) t.completed = true;
+  }
+
+  await setActorTrainingData(actor, flags);
+
+  // re-render tab
+  await refreshTrainingTab(app, html, actor);
 }
