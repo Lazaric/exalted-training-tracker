@@ -7,7 +7,7 @@ Hooks.once("init", () => {
   document.head.appendChild(link);
 
   // Reset confirmation setting every time sheet is opened
-  console.log("Rerender reset of confirmation");
+
   app._trainingHideConfirmActions = false;
 
   // --- DATE FORMAT HELPER ---
@@ -214,7 +214,7 @@ function activateTrainingListeners(app, html, actor) {
   html.find(".event_SortCycle").off("click.training");
   html.find(".event_SortCycle").on("click.training", async () => {
     const newMode = await cycleSortMode(actor);
-    console.log("New sort mode:", newMode);
+
 
     await refreshTrainingTab(app, html, actor);
   }); // end event_SortCycle
@@ -250,7 +250,7 @@ function activateTrainingListeners(app, html, actor) {
       trainingItems: flags.items || [],
     };
 
-    console.log("Exporting training data:", data);
+
 
     // Serialize
     const json = JSON.stringify(data, null, 2);
@@ -331,7 +331,7 @@ function activateTrainingListeners(app, html, actor) {
   html.find(".event_SortAscDesc").off("click.training");
   html.find(".event_SortAscDesc").on("click.training", async () => {
     const newDir = await toggleSortDescending(actor);
-    console.log("Sort direction now:", newDir ? "descending" : "ascending");
+
     await refreshTrainingTab(app, html, actor);
   });
   /* CONFIRMATIONS TOGGLE
@@ -425,7 +425,7 @@ async function buildTrainingContextAsync(actor, app) {
 
 async function sortTrainingItemsAsync(items, mode, actor) {
 
-  console.log("sortTrainingItemsAsync pre sort", items);
+
   const byCreated = (a, b) => normalizeDate(a.createdDate).localeCompare(normalizeDate(b.createdDate));
 
   const byName = (a, b) => (a.name || "").localeCompare(b.name || "");
@@ -471,7 +471,7 @@ async function sortTrainingItemsAsync(items, mode, actor) {
   const descending = await getSortDescending(actor);
   if (descending) sorted.reverse();
 
-  console.log("sortTrainingItemsAsync post sort", sorted);
+
 
   return sorted;
 }
@@ -668,11 +668,13 @@ async function openEditTrainingDialog(actor, itemData = null) {
     ],
   });
 
-  console.log("Dialog result:", result);
+
 
   if (result !== "ok") return null;
 
   const form = document.querySelector(".training-edit-dialog");
+
+
 
   return {
     id: newItem.id,
@@ -855,76 +857,103 @@ function normalizeDate(value) {
   return isNaN(d.getTime()) ? "" : d.toISOString();
 }
 
-
 async function confirmIfEnabled(app, actor, message) {
   if (app._trainingHideConfirmActions) return true;
   return window.confirm(message);
 }
 
 /* --------------------------------------------------------
- * BULK TRAINING EDIT — Operational Logic (DialogV2 Safe)
- *
- *     content: `
-            <form class="bulk-edit-form">
-                <div style="margin-bottom:10px;">
-                  <label><strong>New Start Date</strong>:</label>
-                  <input type="text" name="bulkStart" style="width:100%;" />
-                </div>
-
-                <div>
-                  <label><input type="checkbox" name="setCreated" /> Replace Created Dates</label>
-                </div>
-
-                <div>
-                  <label><input type="checkbox" name="markCompleted" /> Mark ALL as Completed</label>
-                </div>
-            </form>
-        `,
-        *
-        *
-        *   console.log("dialogHtml", dialogEl);
+ * BULK TRAINING EDIT — Operational Logic
  * -------------------------------------------------------- */
 async function handleBulkTrainingEdit(actor, app, html) {
 
-  // Render simple dialog form
-  const dialogHtml = await foundry.applications.handlebars.renderTemplate(
-      "modules/exalted-training-tracker/templates/bulk-edit.hbs",
-      {}
-  );
-  let dialogEl = null;
-  // Open the dialog
+  // 1. Render the HTML
+  // We explicitly define the HTML here to ensure input names match our JS selectors
+  const content = `
+<section class="bulk-edit-form">
+    <h3>Bulk Edit Training Items</h3>
+
+    <div class="form-group">
+        <div>Set ALL Start Dates (in-world):</div>
+        <input type="text" name="bulkStart" placeholder="e.g. 21 Descending Air RY768" />
+    </div>
+
+    <div class="form-group checkbox-row">
+        <div>Set ALL Created Dates to NOW</div>
+        <input type="checkbox" name="bulkCreated" />
+    </div>
+
+    <div class="form-group checkbox-row">
+        <div>Mark ALL training items as completed </div>
+        <input type="checkbox" name="bulkComplete" />
+    </div>
+</section>
+`;
+
+  // 2. Open the Dialog
+  // We use a callback on the button to extract data before the DOM is destroyed
   const result = await foundry.applications.api.DialogV2.prompt({
     window: { title: "Bulk Edit Training" },
-    content: dialogHtml,
-    render: (ctx) => { dialogEl = ctx.element[0]; },
+    content: content,
     buttons: [
-      { label: "Apply", action: "ok", default: true },
-      { label: "Cancel", action: "cancel" }
+      {
+        label: "Apply",
+        action: "ok",
+        default: true,
+        // WE EXTRACT DATA HERE - While the HTML definitely still exists
+        callback: (event, button, dialog) => {
+          // We use the specific class selector we defined in 'content'
+          const root = document.querySelector(".bulk-edit-form");
+
+          if (!root) return null; // Safety check
+
+          return {
+            newStart: root.querySelector("[name='bulkStart']").value.trim(),
+            setCreated: root.querySelector("[name='bulkCreated']").checked,
+            markCompleted: root.querySelector("[name='bulkComplete']").checked
+          };
+        }
+      },
+      { label: "Cancel", action: "cancel", default: false }
     ]
   });
 
-  // Cancel clicked? stop
-  if (result !== "ok" || !dialogEl) return;
+  // 3. Check for cancellation
+  // DialogV2.prompt returns "cancel" (or whatever the action string is) if dismissed,
+  // OR the return value of the callback if the button was clicked.
+  if (!result || result === "cancel") return null;
 
-  const form = dialogEl.querySelector(".bulk-edit-form");
-  if (!form) return;
+  // 4. Extract data from the result object we built in the callback
+  const { newStart, setCreated, markCompleted } = result;
 
-  const newStart      = form.querySelector("[name='bulkStart']")?.value.trim() || "";
-  const setCreated = form.querySelector("[name='bulkCreated']").checked;
-  const markCompleted = form.querySelector("[name='bulkComplete']")?.checked || false;
 
-  // Load training data
-  const flags = await getActorTrainingData(actor);
-
-  // Apply changes
-  for (const t of flags.items) {
-    if (newStart)   t.startDate   = newStart;
-    if (setCreated) item.createdDate = new Date().toISOString();
-    if (markCompleted) t.completed = true;
+  const trainingData = await getActorTrainingData(actor);
+  let changed = false;
+  for (const t of trainingData.items) {
+    if (newStart) {
+      t.startDate = newStart;
+      changed = true;
+    }
+    if (setCreated) {
+      t.createdDate = new Date().toISOString();
+      changed = true;
+    }
+    if (markCompleted) {
+      t.completed = true;
+      changed = true;
+    }
   }
 
-  await setActorTrainingData(actor, flags);
+  // 6. Save and Refresh (only if changes were made)
+  if (changed) {
+    await setActorTrainingData(actor, trainingData);
 
-  // re-render tab
-  await refreshTrainingTab(app, html, actor);
+    ChatMessage.create({
+      speaker: {actor: actor.id, alias: actor.name},
+      content: `⚡ <b>${actor.name}</b> performed a bulk update on training projects.`
+    });
+
+    // re-render tab
+    await refreshTrainingTab(app, html, actor);
+  }
 }
