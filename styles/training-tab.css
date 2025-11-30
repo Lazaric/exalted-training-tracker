@@ -366,3 +366,8 @@ border: 1px solid #666;
 .dropdown-item:hover {
   background: var(--color-bg-dark-4);
 }
+
+.editLabel {
+  flex-grow: 1;
+  white-space: nowrap;
+}

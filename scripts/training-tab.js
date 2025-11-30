@@ -668,13 +668,9 @@ async function openEditTrainingDialog(actor, itemData = null) {
     ],
   });
 
-
-
   if (result !== "ok") return null;
 
   const form = document.querySelector(".training-edit-dialog");
-
-
 
   return {
     id: newItem.id,
@@ -867,45 +863,60 @@ async function confirmIfEnabled(app, actor, message) {
  * -------------------------------------------------------- */
 async function handleBulkTrainingEdit(actor, app, html) {
 
+  // SAFETY CHECK: Don't bother opening if there is no data to edit
+  const trainingData = await getActorTrainingData(actor);
+  if (!trainingData?.items || trainingData.items.length === 0) {
+    ui.notifications.warn(`${actor.name} has no training projects to edit.`);
+    return;
+  }
+
+// IMPROVEMENT 1: Generate a unique ID to ensure we target THIS specific dialog
+  const formId = `bulk-edit-${foundry.utils.randomID()}`;
+
   // 1. Render the HTML
   // We explicitly define the HTML here to ensure input names match our JS selectors
   const content = `
-<section class="bulk-edit-form">
-    <h3>Bulk Edit Training Items</h3>
+    <form id="${formId}" class="bulk-edit-form standard-form">
+        <p class="notes">Apply changes to <strong>${trainingData.items.length}</strong> training projects.</p>
 
-    <div class="form-group">
-        <div>Set ALL Start Dates (in-world):</div>
-        <input type="text" name="bulkStart" placeholder="e.g. 21 Descending Air RY768" />
-    </div>
+        <div class="form-group">
+            <label class="editLabel">Set Start Dates</label>
+            <div class="form-fields">
+                <input type="text" name="bulkStart" placeholder="e.g. 21 Descending Air" />
+            </div>            
+        </div>
 
-    <div class="form-group checkbox-row">
-        <div>Set ALL Created Dates to NOW</div>
-        <input type="checkbox" name="bulkCreated" />
-    </div>
+        <div class="form-group">
+            <label class="editLabel">Reset Created Date to NOW</label>
+            <div class="form-fields">
+                <input type="checkbox" name="bulkCreated" />
+            </div>
+        </div>
 
-    <div class="form-group checkbox-row">
-        <div>Mark ALL training items as completed </div>
-        <input type="checkbox" name="bulkComplete" />
-    </div>
-</section>
-`;
+        <div class="form-group">
+            <label class="editLabel">Mark ALL as Completed</label>
+            <div class="form-fields">
+                <input type="checkbox" name="bulkComplete" />
+            </div>
+        </div>
+    </form>
+  `;
 
   // 2. Open the Dialog
   // We use a callback on the button to extract data before the DOM is destroyed
   const result = await foundry.applications.api.DialogV2.prompt({
-    window: { title: "Bulk Edit Training" },
+    window: { title: `Bulk Edit: ${actor.name}` },
     content: content,
     buttons: [
       {
         label: "Apply",
         action: "ok",
         default: true,
-        // WE EXTRACT DATA HERE - While the HTML definitely still exists
         callback: (event, button, dialog) => {
-          // We use the specific class selector we defined in 'content'
-          const root = document.querySelector(".bulk-edit-form");
-
-          if (!root) return null; // Safety check
+          // IMPROVEMENT 1 (Continued): Select by unique ID
+          // This is 100% safe even if multiple dialogs are open
+          const root = document.getElementById(formId);
+          if (!root) return null;
 
           return {
             newStart: root.querySelector("[name='bulkStart']").value.trim(),
@@ -926,8 +937,9 @@ async function handleBulkTrainingEdit(actor, app, html) {
   // 4. Extract data from the result object we built in the callback
   const { newStart, setCreated, markCompleted } = result;
 
+  // Optimization: If user clicked Apply but didn't check anything, stop here.
+  if (!newStart && !setCreated && !markCompleted) return;
 
-  const trainingData = await getActorTrainingData(actor);
   let changed = false;
   for (const t of trainingData.items) {
     if (newStart) {
@@ -938,7 +950,7 @@ async function handleBulkTrainingEdit(actor, app, html) {
       t.createdDate = new Date().toISOString();
       changed = true;
     }
-    if (markCompleted) {
+    if (markCompleted && !t.completed) {
       t.completed = true;
       changed = true;
     }
