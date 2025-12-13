@@ -1,15 +1,15 @@
 <section class="training-edit-dialog">
-    <div class="form-group">
+    <div class="trainingformGroup">
         <div class="label">Name</div>
         <input type="text" name="name" value="{{item.name}}" />
     </div>
 
-    <div class="form-group">
+    <div class="trainingformGroup">
         <div class="label">XP Cost</div>
         <input type="number" name="xpCost" value="{{item.xpCost}}" />
     </div>
 
-    <div class="form-group">
+    <div class="trainingformGroup">
         <div class="label">XP Source</div>
         <select name="xpSource">
             <option value="standard" {{#if (eq item.xpSource "standard")}}selected{{/if}}>Standard</option>
@@ -19,22 +19,22 @@
         </select>
     </div>
 
-    <div class="form-group">
+    <div class="trainingformGroup">
         <div class="label">Total Days </div>
         <input type="number" name="totalDays" value="{{item.totalDays}}" />
     </div>
 
-    <div class="form-group">
+    <div class="trainingformGroup">
         <div class="label"> Start Date</div>
         <input type="text" name="startDate" value="{{item.startDate}}" />
     </div>
 
-    <div class="form-group">
+    <div class="trainingformGroup">
         <div class="label">Notes </div>
         <textarea name="notes">{{item.notes}}</textarea>
     </div>
 
-    <div class="form-group">
+    <div class="trainingformGroup">
         <div class="label"> Created Date</div>
         <input type="text" name="createDate" value="{{item.createDate}}" />
     </div>

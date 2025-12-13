@@ -879,21 +879,21 @@ async function handleBulkTrainingEdit(actor, app, html) {
     <form id="${formId}" class="bulk-edit-form standard-form">
         <p class="notes">Apply changes to <strong>${trainingData.items.length}</strong> training projects.</p>
 
-        <div class="form-group">
+        <div class="trainingform">
             <label class="editLabel">Set Start Dates</label>
             <div class="form-fields">
                 <input type="text" name="bulkStart" placeholder="e.g. 21 Descending Air" />
             </div>            
         </div>
 
-        <div class="form-group">
+        <div class="trainingformGroup">
             <label class="editLabel">Reset Created Date to NOW</label>
             <div class="form-fields">
                 <input type="checkbox" name="bulkCreated" />
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="trainingFormGroup">
             <label class="editLabel">Mark ALL as Completed</label>
             <div class="form-fields">
                 <input type="checkbox" name="bulkComplete" />

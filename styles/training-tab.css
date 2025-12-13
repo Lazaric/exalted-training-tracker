@@ -3,12 +3,16 @@
   margin-bottom: 1.5rem;
 }
 
-.form-group {
+.trainingFormGroup {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
+
+  align-items: center;
+  margin: 0;
+  gap: 0.5rem;
 }
-.form-group.label {
+.trainingFormGroup.label {
   white-space: nowrap;
   min-width: 45px;
 }

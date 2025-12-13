@@ -3,7 +3,7 @@
   "type": "module",
   "title": "Lazaric's Exalted 3e Training Tracker",
   "description": "Adds a Training & XP tab to Exalted 3e character sheets, including training entries, XP totals, calendar integration, chat output, and import/export.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
