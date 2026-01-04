@@ -1,4 +1,4 @@
-// TRAINING TRACKER
+// TRAINING TRACKER INITIALISE
 Hooks.once("init", () => {
 
   const link = document.createElement("link");
@@ -250,8 +250,6 @@ function activateTrainingListeners(app, html, actor) {
       trainingItems: flags.items || [],
     };
 
-
-
     // Serialize
     const json = JSON.stringify(data, null, 2);
 
@@ -334,6 +332,7 @@ function activateTrainingListeners(app, html, actor) {
 
     await refreshTrainingTab(app, html, actor);
   });
+
   /* CONFIRMATIONS TOGGLE
  * -------------------------------------------------------- */
   html.find(".event_ConfirmToggle").off("click.training");
@@ -348,7 +347,6 @@ function activateTrainingListeners(app, html, actor) {
     await refreshTrainingTab(app, html, actor);
   });
 
-
   /* 3-dots dropdown menu toggle
  * ---------------------------------------------- */
   html.find(".training-menu-button").off("click.menu");
@@ -357,7 +355,7 @@ function activateTrainingListeners(app, html, actor) {
     container.classList.toggle("open");
   });
 
-// Close dropdown if you click anywhere else
+ // Close dropdown if you click anywhere else
   $(document).on("click.trainingMenu", evt => {
     if (!evt.target.closest(".training-menu-container")) {
       html.find(".training-menu-container").removeClass("open");
@@ -533,10 +531,8 @@ function calculateXPTotals(actor, items, customXP) {
   return totals;
 }
 
-
-
 /* -------------------------------------------------------------
- * Helper: Refresh only the Training tab contents in-place
+ * Helpers: Refresh only the Training tab contents in-place
  * ------------------------------------------------------------- */
 async function refreshTrainingTab(app, html, actor) {
   const $html = html instanceof jQuery ? html : $(html);
@@ -575,17 +571,30 @@ async function refreshTrainingTab(app, html, actor) {
   activateTrainingListeners(app, $html, actor);
 }
 
+function canViewNpcPrivateTab(actor) {
+  return game.user.isGM || actor.testUserPermission(game.user, "OWNER");
+}
+
+async function getActorPrivateNotes(actor) {
+  return actor.getFlag("exalted-training-tracker", "privateNotes") || "";
+}
+
+async function setActorPrivateNotes(actor, value) {
+  return actor.setFlag("exalted-training-tracker", "privateNotes", value ?? "");
+}
+
+
 /* -------------------------------------------------------------
- * MAIN HOOK — Inject Tab + Tab Contents
+ * RENDER ACTOR SHEET — Inject Tabs + Tabs Contents
  * ------------------------------------------------------------- */
 Hooks.on("renderExaltedThirdActorSheet", async (app, html, data) => {
   const actor = app.actor;
   const $html = $(html);
 
-
+  if (actor.type === "npc") return;
 
   /* ---------------------------
-   * 1) Inject tab button
+   * 1) Inject TRAINING tab button
    * --------------------------- */
   const tabsNav = $html.find("nav.sheet-tabs[data-group='primary']");
   if (tabsNav.find("[data-tab='training']").length === 0) {
@@ -597,7 +606,7 @@ Hooks.on("renderExaltedThirdActorSheet", async (app, html, data) => {
   }
 
   /* ---------------------------
-   * 2) Inject tab body
+   * 2) Inject TRAINING tab body
    * --------------------------- */
 
   // Find the main container where all tabs live
@@ -633,6 +642,7 @@ Hooks.on("renderExaltedThirdActorSheet", async (app, html, data) => {
   activateTrainingListeners(app, $html, actor);
 });
 
+// OPEN TRAINING DIALOGUE
 async function openEditTrainingDialog(actor, itemData = null) {
   const startDate = getCurrentTrainingDate();
 
@@ -686,6 +696,7 @@ async function openEditTrainingDialog(actor, itemData = null) {
   };
 }
 
+// GET DATE FROM SIMPLE CALENDAR
 function getCurrentTrainingDate() {
   const sc = game.modules.get("foundryvtt-simple-calendar");
 
@@ -706,6 +717,7 @@ function getCurrentTrainingDate() {
   return now.toLocaleDateString();
 }
 
+// TRAINING DATA JSON CHECK
 function validateImportedTrainingData(json) {
   // Basic shape check
   if (typeof json !== "object") {
@@ -797,6 +809,7 @@ function validateImportedTrainingData(json) {
   };
 }
 
+// TRAINING JSON DATA IMPORT
 async function applyImportedTrainingData(actor, data) {
   // --------------------------
   // Overwrite system XP
@@ -830,15 +843,19 @@ async function applyImportedTrainingData(actor, data) {
   await setActorTrainingData(actor, flags);
 }
 
+// GET CURRENT SORT DIRECTION
 async function getSortDescending(actor) {
   return actor.getFlag("exalted-training-tracker", "sortDescending") ?? false;
 }
 
+// SORT TRAINING ITEMS ASCENDING/DESCENDING
 async function toggleSortDescending(actor) {
   const current = await getSortDescending(actor);
   await actor.setFlag("exalted-training-tracker", "sortDescending", !current);
   return !current;
 }
+
+// DATE FORMAT OR BLANK
 function normalizeDate(value) {
   if (!value) return "";
 
@@ -853,6 +870,7 @@ function normalizeDate(value) {
   return isNaN(d.getTime()) ? "" : d.toISOString();
 }
 
+// CONFIRM MESSAGE ONLY IF BULK DELETE IS NOT ALLOWD
 async function confirmIfEnabled(app, actor, message) {
   if (app._trainingHideConfirmActions) return true;
   return window.confirm(message);
