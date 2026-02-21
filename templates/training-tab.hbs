@@ -7,7 +7,10 @@
 <section class="training-part" data-tab="training">
 
     <section class="training-core-xp">
-        <h3>Experience Pools</h3>
+        <div class="trainingHeaderRow">
+            <h3>Experience Pools</h3>
+            <button type="button" class="trainingButton recalc event_RecalcTraining">Recalculate</button>
+        </div>
         <div class="core-xp-row">
             <!-- STANDARD XP -->
             <div class="core-xp-item">
@@ -114,13 +117,18 @@
                         <div class="labelRow">{{formatDate item.createdDate}}</div>
 
                         {{#unless item.completed}}
-                            <div class="trainingIncrementButtons mt-auto">
-                                <button class="inc-training event_IncTraining" data-inc="1">+1</button>
-                                <button class="inc-training event_IncTraining" data-inc="7">+7</button>
-                                <button class="inc-training event_IncTraining" data-inc="28">+28</button>
-                            </div>
+                            {{#unless (eq item.xpSource "-")}}
+                                <div class="trainingIncrementButtons mt-auto">
+                                    <button class="inc-training event_IncTraining" data-inc="1">+1</button>
+                                    <button class="inc-training event_IncTraining" data-inc="7">+7</button>
+                                    <button class="inc-training event_IncTraining" data-inc="28">+28</button>
+                                </div>
 
-                            <button class="trainingButton complete event_TrainingComplete">Mark Complete</button>
+                                <button class="trainingButton complete event_TrainingComplete">
+                                    Mark Complete
+                                </button>
+                            {{/unless}}
+                        
                             <button class="trainingButton edit event_TrainingEdit">Edit</button>
                         {{/unless}}
 

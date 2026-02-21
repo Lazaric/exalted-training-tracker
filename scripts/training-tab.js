@@ -371,7 +371,19 @@ function activateTrainingListeners(app, html, actor) {
     await handleBulkTrainingEdit(actor, app, html);
   });
 
+  /* --------------------------------------------------------
+   * RECALCULATE TRAINING BUTTON
+   * -------------------------------------------------------- */
+  html.find(".event_RecalcTraining").off("click.training");
+  html.find(".event_RecalcTraining").on("click.training", async () => {
+    await refreshTrainingTab(app, html, actor);
 
+    ChatMessage.create({
+      speaker: { actor: actor.id, alias: actor.name },
+      content: `🔄 <b>${actor.name}</b> recalculated Training totals.`,
+    });
+  });
+  
 } // end activateTrainingListeners
 
 /* -------------------------------------------------------------
@@ -403,6 +415,8 @@ async function buildTrainingContextAsync(actor, app) {
 
   const xpTotals = calculateXPTotals(actor, sorted, flags.availableXP);
 
+  console.log("buildTrainingContextAsync", xpTotals);
+  
   const ctx = {
     system: actor.system,
     settings: actor.system.settings, // <-- FIX
@@ -498,28 +512,50 @@ async function cycleSortMode(actor) {
  * We calculate SPENT by summing xpCost on training items.
  * ------------------------------------------------------------- */
 function calculateXPTotals(actor, items, customXP) {
+  console.log("== == == == == calculateXPTotals == == == == ==");
+  console.log(items, customXP);
+  console.log("== == == == == calculateXPTotals == == == == ==");
+  console.log("calculateXPTotals", items, customXP);
+  
   const totals = {
-    standard: {
-      spent: 0,
-      available: 0,
-      total: actor.system.experience.standard.total ?? 0,
-    },
-    exalt: {
-      spent: 0,
-      available: 0,
-      total: actor.system.experience.exalt.total ?? 0,
-    },
+    standard: {spent: 0, available: 0, total: actor.system.experience.standard.value ?? 0},
+    exalt: {spent: 0, available: 0, total: actor.system.experience.exalt.value ?? 0},
     mandate: { spent: 0, available: 0, total: customXP.mandate ?? 0 },
     bonus: { spent: 0, available: 0, total: customXP.bonus ?? 0 },
   };
+  
+  console.log("totals", totals);
+  
+  const itemsStandard = items.filter(i => i.xpSource === "standard");
+  const itemsExalt = items.filter(i => i.xpSource === "exalt");
+  const itemsMandate = items.filter(i => i.xpSource === "mandate");
+  const itemsBonus = items.filter(i => i.xpSource === "bonus");
+  
+  console.log("itemsStandard", itemsStandard);
+  console.log("itemsExalt", itemsExalt);
+  console.log("itemsMandate", itemsMandate);
+  console.log("itemsBonus", itemsBonus);
+  
+  const itemsStandardTotal = itemsStandard.reduce((acc, i) => acc + (i.xpCost ?? 0), 0);
+  const itemsExaltTotal = itemsExalt.reduce((acc, i) => acc + (i.xpCost ?? 0), 0);
+  const itemsMandateTotal = itemsMandate.reduce((acc, i) => acc + (i.xpCost ?? 0), 0);
+  const itemsBonusTotal = itemsBonus.reduce((acc, i) => acc + (i.xpCost ?? 0), 0);
 
+  console.log("itemsStandardTotal", itemsStandardTotal);
+  console.log("itemsExaltTotal", itemsExaltTotal);
+  console.log("itemsMandateTotal", itemsMandateTotal);
+  console.log("itemsBonusTotal", itemsBonusTotal);
+  
   for (const t of items) {
-    if (!t.completed && t.xpCost) {
-      if (t.xpSource === "standard") totals.standard.spent += Number(t.xpCost);
-      if (t.xpSource === "exalt") totals.exalt.spent += Number(t.xpCost);
-      if (t.xpSource === "mandate") totals.mandate.spent += Number(t.xpCost);
-      if (t.xpSource === "bonus") totals.bonus.spent += Number(t.xpCost);
-    }
+    if (!t?.xpSource || t.xpSource === "-") continue;
+    
+    const cost = Number(t.xpCost ?? 0);
+    if (!Number.isFinite(cost) || cost === 0) continue;
+
+    if (t.xpSource === "standard") totals.standard.spent += cost;
+    if (t.xpSource === "exalt")    totals.exalt.spent += cost;
+    if (t.xpSource === "mandate")  totals.mandate.spent += cost;
+    if (t.xpSource === "bonus")    totals.bonus.spent += cost;
   }
 
   // compute available = total - spent

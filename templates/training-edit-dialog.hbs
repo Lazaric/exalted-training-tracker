@@ -12,6 +12,7 @@
     <div class="trainingformGroup">
         <div class="label">XP Source</div>
         <select name="xpSource">
+            <option value="-" {{#if (eq item.xpSource "-")}}selected{{/if}}>( planned )</option>
             <option value="standard" {{#if (eq item.xpSource "standard")}}selected{{/if}}>Standard</option>
             <option value="exalt" {{#if (eq item.xpSource "exalt")}}selected{{/if}}>Exalt</option>
             <option value="mandate" {{#if (eq item.xpSource "mandate")}}selected{{/if}}>Mandate</option>
