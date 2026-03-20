@@ -162,7 +162,7 @@ function activateTrainingListeners(app, html, actor) {
    * -------------------------------------------------------- */
   html.find(".event_TrainingComplete").off("click.training");
   html.find(".event_TrainingComplete").on("click.training", async (evt) => {
-    if (!await confirmIfEnabled(app, actor,"Are you sure you want to mark this training as completed? This action cannot be undone."))
+    if (!await confirmIfEnabled(app, actor,"Are you sure you want to mark this training as completed?"))
       return;
 
     const card = evt.currentTarget.closest(".training-card");
@@ -195,7 +195,10 @@ function activateTrainingListeners(app, html, actor) {
     const flags = await getActorTrainingData(actor);
 
     const item = flags.items.find((i) => i.id === id);
-
+    if (!item) {
+      console.error("Training item not found:", id);
+      return;
+    }
     // Remove entry
     flags.items = flags.items.filter((i) => i.id !== id);
 
@@ -208,7 +211,37 @@ function activateTrainingListeners(app, html, actor) {
 
     await refreshTrainingTab(app, html, actor);
   }); // end event_TrainingDelete
+  /* UNLOCK TRAINING ENTRY
+   * -------------------------------------------------------- */
+  html.find(".event_TrainingUnlock").off("click.training");
+  html.find(".event_TrainingUnlock").on("click.training", async (evt) => {
+    if (!await confirmIfEnabled(app, actor, "Are you sure you want to unlock this training project?"))
+      return;
 
+    const card = evt.currentTarget.closest(".training-card");
+    const id = card.dataset.trainingId;
+
+    const flags = await getActorTrainingData(actor);
+
+    const item = flags.items.find((i) => i.id === id);
+    if (!item) {
+      console.error("Training item not found:", id);
+      return;
+    }
+
+    item.completed = null;
+
+    await setActorTrainingData(actor, flags);
+
+    ChatMessage.create({
+      speaker: { actor: actor.id, alias: actor.name },
+      content: `🔓 <b>${actor.name}</b> unlocked training project: <b>${item.name}</b>.`,
+    });
+
+    await refreshTrainingTab(app, html, actor);
+  }); // end event_TrainingDelete
+  
+  
   /* SORT MODE CYCLE
    * -------------------------------------------------------- */
   html.find(".event_SortCycle").off("click.training");
@@ -403,7 +436,18 @@ async function getActorTrainingData(actor) {
 async function setActorTrainingData(actor, data) {
   return actor.setFlag("exalted-training-tracker", "data", data);
 }
+async function unlockTrainingItemAsync(actor, itemId) {
+  const items = foundry.utils.duplicate(actor.getFlag("exalted-training-tracker", "items") ?? []);
 
+  const item = items.find(i => i.id === itemId);
+  if (!item) return;
+
+  item.completed = null;
+
+  await actor.setFlag("exalted-training-tracker", "items", items);
+
+  return item;
+}
 /* -------------------------------------------------------------
  * Helper: Build template rendering context
  * ------------------------------------------------------------- */

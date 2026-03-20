@@ -379,3 +379,17 @@ border: 1px solid #666;
 .trainingButton.recalc {
   margin-left: auto;
 }
+.training-card-footer{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.trainingButton.delete {
+  width: 45%;
+}
+.trainingButton.unlock {
+  width: 45%;
+}

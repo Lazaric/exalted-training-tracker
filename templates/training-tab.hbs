@@ -132,12 +132,18 @@
                             <button class="trainingButton edit event_TrainingEdit">Edit</button>
                         {{/unless}}
 
-                        {{#if item.completed}}
-                            <div class="completed-marker mt-auto">Completed</div>
-                        {{/if}}
+                        <div class="training-card-footer">
+                            {{#if item.completed}}
+                                <div class="completed-marker mt-auto">Completed</div>
+                                <button class="trainingButton unlock event_TrainingUnlock">Unlock</button>
+                            {{/if}}
+                            {{#unless item.completed}}
+                                <button class="trainingButton delete event_TrainingDelete">Delete</button>
+                            {{/unless}}
+                            
+                                                     
+                        </div>
 
-
-                        <button class="trainingButton delete event_TrainingDelete">Delete</button>
                     </div>
 
                 </div>
