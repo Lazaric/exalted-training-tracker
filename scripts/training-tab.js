@@ -1,3 +1,5 @@
+const MODULE_ID = "exalted-training-tracker";
+
 // TRAINING TRACKER INITIALISE
 Hooks.once("init", () => {
 
@@ -6,9 +8,7 @@ Hooks.once("init", () => {
   link.href = "modules/exalted-training-tracker/styles/training-tab.css";
   document.head.appendChild(link);
 
-  // Reset confirmation setting every time sheet is opened
 
-  app._trainingHideConfirmActions = false;
 
   // --- DATE FORMAT HELPER ---
   Handlebars.registerHelper("formatDate", function(value) {
@@ -29,7 +29,22 @@ Hooks.once("init", () => {
     return `${yyyy}-${MM}-${dd} ${HH}:${mm}`;
   });
 });
+Hooks.once("ready", () => {
+  console.log(`${MODULE_ID} | ready hook fired`);
 
+  const module = game.modules.get(MODULE_ID);
+  if (!module) {
+    console.error(`${MODULE_ID} | module not found during ready hook`);
+    return;
+  }
+
+  module.api = {
+    ...(module.api ?? {}),
+    openAwardExperienceDialog,
+  };
+
+  console.log(`${MODULE_ID} | API registered:`, module.api);
+});
 const TRAINING_SORT_MODES = [
   "created-status",
   "name-status",
@@ -42,6 +57,8 @@ const TRAINING_SORT_MODES = [
  * Helper: Activate listeners inside the Training tab
  * ------------------------------------------------------------- */
 function activateTrainingListeners(app, html, actor) {
+  
+  
   /* STANDARD + EXALT XP INPUTS
    * -------------------------------------------------------- */
   html.find(".core-xp-input").off("change.training");
@@ -1066,4 +1083,187 @@ async function handleBulkTrainingEdit(actor, app, html) {
     // re-render tab
     await refreshTrainingTab(app, html, actor);
   }
+}
+
+/* --------------------------------------------------------
+ * AWARD EXPERIENCE — Operational Logic
+ * -------------------------------------------------------- */
+async function openAwardExperienceDialog() {
+  console.log(`${MODULE_ID} | openAwardExperienceDialog called`);
+
+  if (!game.user.isGM) {
+    ui.notifications.warn("Only the Storyteller can award experience.");
+    return;
+  }
+
+  const actors = game.users
+      .filter(user => !user.isGM && user.character)
+      .map(user => user.character)
+      .filter((actor, index, array) => array.findIndex(a => a.id === actor.id) === index)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+  console.log(`${MODULE_ID} | Award XP actors found:`, actors);
+
+  if (!actors.length) {
+    ui.notifications.warn("No player characters were found.");
+    return;
+  }
+
+  const recipientRows = actors.map(actor => `
+    <label style="display:flex; gap:6px; align-items:center;">
+      <input type="checkbox" name="recipient" value="${actor.id}" checked />
+      <span>${foundry.utils.escapeHTML(actor.name)}</span>
+    </label>
+  `).join("");
+
+  const content = `
+    <form class="award-xp-dialog">
+      <div class="form-group">
+        <label>Standard XP</label>
+        <input type="number" name="standardAward" min="0" step="1" value="0" />
+      </div>
+
+      <div class="form-group">
+        <label>Exalt XP</label>
+        <input type="number" name="exaltAward" min="0" step="1" value="0" />
+      </div>
+
+      <div class="form-group">
+        <label>Mandate XP</label>
+        <input type="number" name="mandateAward" min="0" step="1" value="0" />
+      </div>
+
+      <hr />
+
+      <div class="form-group">
+        <label>Recipients</label>
+        <div style="display:flex; flex-direction:column; gap:4px; max-height:240px; overflow:auto;">
+          ${recipientRows}
+        </div>
+      </div>
+    </form>
+  `;
+
+  const updateSubmitState = (html) => {
+    const standardAward = Number(html.find("[name='standardAward']").val() ?? 0);
+    const exaltAward = Number(html.find("[name='exaltAward']").val() ?? 0);
+    const mandateAward = Number(html.find("[name='mandateAward']").val() ?? 0);
+    const recipientCount = html.find("[name='recipient']:checked").length;
+
+    const hasAward = standardAward > 0 || exaltAward > 0 || mandateAward > 0;
+    const hasRecipients = recipientCount > 0;
+
+    html.find("button[data-button='submit']").prop("disabled", !(hasAward && hasRecipients));
+  };
+
+  new Dialog({
+    title: "Award Experience",
+    content,
+    buttons: {
+      submit: {
+        label: "Award XP",
+        callback: async (html) => {
+          const standardAward = Number(html.find("[name='standardAward']").val() ?? 0);
+          const exaltAward = Number(html.find("[name='exaltAward']").val() ?? 0);
+          const mandateAward = Number(html.find("[name='mandateAward']").val() ?? 0);
+
+          const actorIds = html.find("[name='recipient']:checked")
+              .map((i, el) => el.value)
+              .get();
+
+          console.log(`${MODULE_ID} | Award values:`, {
+            standardAward,
+            exaltAward,
+            mandateAward,
+            actorIds
+          });
+
+          const awardedActors = [];
+
+          for (const actorId of actorIds) {
+            const actor = game.actors.get(actorId);
+            if (!actor) {
+              console.warn(`${MODULE_ID} | Actor not found:`, actorId);
+              continue;
+            }
+
+            const updateData = {};
+
+            if (standardAward > 0) {
+              const currentStandard = Number(actor.system?.experience?.standard?.value ?? 0);
+              updateData["system.experience.standard.value"] = currentStandard + standardAward;
+            }
+
+            if (exaltAward > 0) {
+              const currentExalt = Number(actor.system?.experience?.exalt?.value ?? 0);
+              updateData["system.experience.exalt.value"] = currentExalt + exaltAward;
+            }
+
+            if (Object.keys(updateData).length > 0) {
+              console.log(`${MODULE_ID} | Updating core XP for ${actor.name}:`, updateData);
+              await actor.update(updateData);
+            }
+
+            if (mandateAward > 0) {
+              const flags = await getActorTrainingData(actor);
+              flags.availableXP ??= {};
+              flags.availableXP.mandate = Number(flags.availableXP.mandate ?? 0) + mandateAward;
+
+              console.log(`${MODULE_ID} | Updating mandate XP for ${actor.name}:`, flags.availableXP.mandate);
+              await setActorTrainingData(actor, flags);
+            }
+
+            awardedActors.push(actor);
+          }
+
+          const recipientList = awardedActors
+              .map(actor => `<li>${foundry.utils.escapeHTML(actor.name)}</li>`)
+              .join("");
+
+          const awardRows = [];
+          if (standardAward > 0) awardRows.push(`<div><strong>Standard XP:</strong> ${standardAward}</div>`);
+          if (exaltAward > 0) awardRows.push(`<div><strong>Exalt XP:</strong> ${exaltAward}</div>`);
+          if (mandateAward > 0) awardRows.push(`<div><strong>Mandate XP:</strong> ${mandateAward}</div>`);
+
+          ChatMessage.create({
+            speaker: { alias: game.user.name },
+            content: `
+    <div class="training-chat-card">
+      <h3>Experience Awarded</h3>
+
+      <div class="training-chat-section">
+        ${awardRows.join("")}
+      </div>
+
+      <div class="training-chat-section">
+        <strong>Recipients:</strong>
+        <ul>
+          ${recipientList}
+        </ul>
+      </div>
+
+      <div class="training-chat-footer">
+        Awarded by ${foundry.utils.escapeHTML(game.user.name)}
+      </div>
+    </div>  `
+          });
+
+          ui.notifications.info("Experience awarded.");
+        }
+      },
+      cancel: {
+        label: "Cancel"
+      }
+    },
+    default: "submit",
+    render: (html) => {
+      html.find("[name='standardAward'], [name='exaltAward'], [name='mandateAward']")
+          .on("input", () => updateSubmitState(html));
+
+      html.find("[name='recipient']")
+          .on("change", () => updateSubmitState(html));
+
+      updateSubmitState(html);
+    }
+  }).render(true);
 }

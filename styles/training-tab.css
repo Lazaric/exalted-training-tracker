@@ -393,3 +393,98 @@ border: 1px solid #666;
 .trainingButton.unlock {
   width: 45%;
 }
+
+/*AWARD XP CONTROLS*/
+ .xpAwardDialog .form-group {
+   margin-bottom: 10px;
+ }
+
+.xpAwardDialog input[type="number"] {
+  width: 100%;
+}
+
+.xpAwardRecipientList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.xpAwardRecipientRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.training-chat-card {
+  border: 1px solid #8f6f3d;
+  background: rgba(40, 28, 20, 0.88);
+  color: #ead9b8;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.training-chat-card h3 {
+  margin: 0 0 8px 0;
+  color: #f2d28b;
+  border-bottom: 1px solid #8f6f3d;
+  padding-bottom: 4px;
+}
+
+.training-chat-section {
+  margin-top: 8px;
+}
+
+.training-chat-section ul {
+  margin: 4px 0 0 18px;
+  padding: 0;
+}
+
+.training-chat-footer {
+  margin-top: 10px;
+  font-size: 0.85em;
+  opacity: 0.8;
+  text-align: right;
+}
+
+
+/* ************************************************
+HIDE EXISTING XP CONTROLS
+************************************************ */
+
+/* Hide base Exalted 3e Advancement header */
+.tab.biography[data-tab="biography"] label.resource-label:has(a[data-dialogtype="advancement"]) {
+  display: none !important;
+}
+
+/* Hide base Personal XP / Exalt XP blocks */
+.tab.biography[data-tab="biography"] input[name="system.experience.standard.value"],
+.tab.biography[data-tab="biography"] input[name="system.experience.standard.total"],
+.tab.biography[data-tab="biography"] input[name="system.experience.exalt.value"],
+.tab.biography[data-tab="biography"] input[name="system.experience.exalt.total"] {
+  display: none !important;
+}
+
+/* Hide the whole two-column XP section containing those inputs */
+.tab.biography[data-tab="biography"] .grid.grid-2col:has(input[name="system.experience.standard.value"]),
+.tab.biography[data-tab="biography"] .grid.grid-2col:has(input[name="system.experience.exalt.value"]) {
+  display: none !important;
+}
+
+/* Hide the XP trigger / advancement notes textarea */
+.tab.biography[data-tab="biography"] textarea[name="system.experience.trigger"] {
+  display: none !important;
+}
+
+/* Hide Experience Changes header */
+.tab.biography[data-tab="biography"] .resource-label:has(a[data-action="experienceAction"]) {
+  display: none !important;
+}
+
+/* Hide Experience Changes list */
+.tab.biography[data-tab="biography"] ol.items-list:has(a[data-action="experienceAction"]) {
+  display: none !important;
+}
+

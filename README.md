@@ -1,84 +1,216 @@
-# 📘 **Exalted 3e – Training & XP Tracker**
+# 📘 Exalted 3e – Training & XP Tracker
 
-## *A Foundry VTT module for the Exalted Third Edition system (AppV2)*
+## A Foundry VTT module for the Exalted Third Edition system (AppV2)
 
-This module adds a brand-new **Training** tab to all Exalted 3e character sheets.  
-It provides an elegant interface for tracking experience points, training projects, time spent, and advancement costs—without modifying any core system files.
+This module adds a dedicated **Training** tab to Exalted 3e character sheets for managing advancement, long-term training projects, and experience tracking.
 
-Designed for long-term campaigns where XP spending and training time matter.
+Designed for campaigns where training time, advancement pacing, and XP management are an important part of play.
+
+The module integrates cleanly with the existing Exalted 3e sheets without modifying core system files.
 
 ---
 
-## ✨ **Features**
+# ✨ Features
 
-### 🟡 **New Training Tab on the Character Sheet**
-Automatically injected into the existing sheet tabs using Foundry’s AppV2 rendering pipeline.
+## 🎓 Dedicated Training Tab
 
-### 🎓 **Training Project Tracking**
-- Create, edit, and delete training items  
-- Track *total days required* and *days completed*  
-- Increment training time by **+1 / +7 / +28** days  
-- Mark items as completed  
-- Automatic chat notifications for all updates
+Adds a fully integrated **Training** tab to Exalted 3e character sheets using Foundry VTT’s AppV2 sheet rendering.
 
-### 📊 **XP Pool Management**
-Displays and allows editing of all XP pools:
-- Standard XP  
-- Exalt XP  
-- Mandate XP *(custom)*  
-- Bonus Points *(custom)*  
+The tab provides:
+- XP pool summaries
+- Training project management
+- Time tracking
+- Import/export tools
+- Training completion workflow
+- Planned future training entries
 
-Includes real-time calculation of:
-- **Spent**
-- **Available**
-- **Total**
+---
 
-### 🗂️ **Smart Sorting Modes**
-Cycle through several ways to organise your training projects:
+## 📚 Training Project Tracking
+
+Create and manage training projects with:
+
+- Name
+- Description / notes
+- XP source
+- XP cost
+- Total training days required
+- Completed training days
+- Creation date
+- Completion date
+
+Training time can be incremented quickly using:
+- +1 day
+- +7 days
+- +28 days
+
+Projects can be:
+- Edited
+- Deleted
+- Completed
+- Unlocked after completion
+
+All actions generate optional in-character styled chat notifications.
+
+---
+
+## 📝 Planned Training Entries
+
+Training entries can use the special XP source:
+
+```text
+-
+```
+
+This marks them as **planned training** rather than active advancement.
+
+Planned entries:
+- Do not contribute to XP totals
+- Cannot be incremented
+- Cannot be completed
+- Remain editable for future conversion into active projects
+
+Useful for:
+- Future Charm planning
+- Long-term build tracking
+- Story reward wishlists
+- Martial Arts progression plans
+
+---
+
+# 📊 XP Tracking
+
+The tracker supports:
+
+- Standard XP
+- Exalt XP
+- Mandate XP (custom)
+- Bonus Points (custom)
+
+Each pool displays:
+- Total
+- Spent
+- Available
+
+XP totals are calculated from active training entries.
+
+The module now intentionally hides the default Exalted 3e:
+- Advancement section
+- XP inputs
+- Experience Changes list
+
+to avoid duplicate tracking systems and conflicting edits.
+
+---
+
+# 👑 Storyteller XP Award Macro
+
+The module exposes a Storyteller-facing API for awarding XP directly to player characters.
+
+## Macro Command
+
+Create a Script Macro with:
+
+```js
+game.modules.get("exalted-training-tracker")?.api?.openAwardExperienceDialog();
+```
+
+---
+
+## Award Dialog Features
+
+The award dialog allows the Storyteller to:
+
+- Award Standard XP
+- Award Exalt XP
+- Award Mandate XP
+- Select which player characters receive the award
+- Exclude specific players from distribution
+
+The submit button is automatically disabled unless:
+- At least one XP type is greater than 0
+- At least one recipient is selected
+
+The module posts a formatted chat card summarising:
+- XP awarded
+- Recipients
+- Awarding Storyteller
+
+---
+
+# 📅 Calendar Integration
+
+If the **Simple Calendar** module is installed and active:
+
+- New training entries use the in-world date
+
+Otherwise:
+- Falls back to the real-world system date
+
+---
+
+# 🗂️ Sorting Modes
+
+Training entries can be sorted by:
+
 - Created Date (incomplete first)
 - Name (incomplete first)
 - Created Date (all)
 - Name (all)
 - Source → Name → Date
 
-### 📅 **Calendar Integration**
-Uses **Simple Calendar** (if installed) to stamp new training entries with an in-world date.
+---
 
-If SC is not installed or active, falls back to the real-world system date.
+# 💾 Import / Export
 
-### 💾 **Import / Export**
-Easily back up or migrate training data:
-- Exports a JSON file containing XP pools and all training items  
-- Imports the same format, with validation and automatic ID regeneration  
+Training data can be exported and imported as JSON.
 
-### 📐 **Non-Destructive Design**
-This module does **not** modify original system files.  
-It injects its tab and UI at runtime, making it resilient to most Exalted 3e system updates.
+Exports include:
+- XP pools
+- Training entries
+- Progress state
+- Metadata
+
+Imports automatically:
+- Validate data structure
+- Regenerate duplicate IDs where necessary
+
+Useful for:
+- Backup
+- Campaign migration
+- Character transfers
+- Offline editing
 
 ---
 
-## 🛠️ **Installation**
+# 🛠️ Installation
 
-### **Method 1: Foundry VTT Module Manager**
-Use the “Install Module” button and paste this Manifest URL:
+## Method 1 — Foundry Module Browser
 
-```
+Install using this manifest URL:
+
+```text
 https://raw.githubusercontent.com/Lazaric/exalted-training-tracker/main/module.json
 ```
 
-### **Method 2: Manual Installation**
-1. Download the latest `.zip` release  
-2. Extract into:  
-   ```
-   FoundryVTT/Data/modules/exalted-training-tracker/
-   ```
+---
+
+## Method 2 — Manual Installation
+
+1. Download the latest release ZIP
+2. Extract to:
+
+```text
+FoundryVTT/Data/modules/exalted-training-tracker/
+```
+
 3. Enable the module in your world
 
 ---
 
-## 📁 **File Structure**
+# 📁 File Structure
 
-```
+```text
 exalted-training-tracker/
 │
 ├── module.json
@@ -87,46 +219,56 @@ exalted-training-tracker/
 ├── scripts/
 │   └── training-tab.js
 │
-└── styles/
-    └── training-tab.css
+├── styles/
+│   └── training-tab.css
+│
+└── templates/
+    ├── training-tab.hbs
+    ├── training-edit-dialog.hbs
+    └── bulk-edit.hbs
 ```
 
-Templates are loaded from:
+---
 
-```
-modules/exalted-training-tracker/templates/
-```
+# 🧪 Compatibility
+
+Tested with:
+
+- Foundry VTT v13
+- Exalted Third Edition system (AppV2)
+
+Optional integrations:
+- Simple Calendar
 
 ---
 
-## 🧪 **Compatibility**
+# 👑 Credits
 
-- **Foundry VTT v13**  
-- **Exalted Third Edition (AppV2)**  
-- Optional integration with:
-  - **Simple Calendar**
-  - **Seasons & Stars** (planned)
+## Author
 
----
+**Lazaric**
 
-## 👑 **Credits**
-
-### **Author**
-**Lazaric**  
-Creator, designer, and implementer of the Exalted Training Tracker.
-
-### **Development Assistance**
-This module was co-developed with the assistance of **ChatGPT**,  
-providing architectural guidance, integration debugging, and code generation support throughout the build.
+Design, implementation, integration, and UI work.
 
 ---
 
-## 📜 **License**
+## Development Assistance
 
-MIT License (or another license of your choosing—just say so and this file can be updated)
+This module was co-developed with assistance from ChatGPT for:
+- Foundry integration guidance
+- AppV2 compatibility
+- UI architecture
+- Debugging
+- Workflow design
 
 ---
 
-## 📣 **Feedback & Issues**
+# 📜 License
 
-If you run into any problems, feel free to submit an issue or request a feature on the GitHub repository.
+MIT License
+
+---
+
+# 📣 Feedback & Issues
+
+Bug reports, suggestions, and feature requests are welcome via the GitHub repository.

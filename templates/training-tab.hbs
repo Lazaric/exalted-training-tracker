@@ -9,7 +9,12 @@
     <section class="training-core-xp">
         <div class="trainingHeaderRow">
             <h3>Experience Pools</h3>
-            <button type="button" class="trainingButton recalc event_RecalcTraining">Recalculate</button>
+            <label class="resource-label">{{localize "Ex3.Advancement"}}
+                <a data-action="showDialog" data-dialogtype="advancement">
+                    <i class="fas fa-info-circle cursor-pointer"></i>
+                </a>
+            </label>
+            <button type="button" class="trainingButton recalc event_RecalcTraining">Recalculate</button>            
         </div>
         <div class="core-xp-row">
             <!-- STANDARD XP -->
@@ -18,6 +23,7 @@
                 <input type="number"
                        class="core-xp-input"
                        data-xp-type="standard"
+                       disabled="disabled"
                        value="{{system.experience.standard.value}}" />
             </div>
             <!-- EXALT XP -->
@@ -26,6 +32,7 @@
                 <input type="number"
                        class="core-xp-input"
                        data-xp-type="exalt"
+                       disabled="disabled"
                        value="{{system.experience.exalt.value}}" />
             </div>
             <!-- MANDATE XP -->
@@ -34,6 +41,7 @@
                 <input type="number"
                        class="custom-xp-input"
                        data-custom="mandate"
+                       disabled="disabled"
                        value="{{customXP.mandate}}" />
             </div>
             <!-- BONUS POINTS -->
@@ -42,6 +50,7 @@
                 <input type="number"
                        class="custom-xp-input"
                        data-custom="bonus"
+                       disabled="disabled"
                        value="{{customXP.bonus}}" />
             </div>
         </div>
