@@ -119,8 +119,42 @@ function activateTrainingListeners(app, html, actor) {
       speaker: { actor: actor.id, alias: actor.name },
       content: `✏️ <b>${actor.name}</b> added training: <b>${newItem.name}</b>.`,
     });
+ 
+    await createCalendariaTrainingNoteAsync({
+      name: `Training Started: ${foundry.utils.escapeHTML(actor.name)} [${foundry.utils.escapeHTML(newItem.name)}]`,
+      icon: "fas fa-book-open",
+      color: "#4a90e2",
+      content: `
+    <h2>Training Started</h2>
 
+    <p>
+      <strong>Character:</strong>
+      ${foundry.utils.escapeHTML(actor.name)}
+    </p>
+
+    <p>
+      <strong>Training:</strong>
+      ${foundry.utils.escapeHTML(newItem.name)}
+    </p>
+
+    <p>
+      <strong>XP Source:</strong>
+      ${foundry.utils.escapeHTML(newItem.xpSource ?? "")}
+    </p>
+
+    <p>
+      <strong>XP Cost:</strong>
+      ${Number(newItem.xpCost ?? 0)}
+    </p>
+
+    <p>
+      <strong>Required Days:</strong>
+      ${Number(newItem.trainingTime ?? 0)}
+    </p>
+  `
+    });
     await refreshTrainingTab(app, html, actor);
+    
   }); //end event_trainingAdd
 
   /* EDIT TRAINING
@@ -196,6 +230,36 @@ function activateTrainingListeners(app, html, actor) {
       speaker: { actor: actor.id, alias: actor.name },
       content: `🎉 <b>${actor.name}</b> completed training: <b>${item.name}</b>.`,
     });
+
+    await createCalendariaTrainingNoteAsync({
+      name: `Training Completed: ${foundry.utils.escapeHTML(actor.name)} [${foundry.utils.escapeHTML(item.name)}]`,
+      icon: "fas fa-check-circle",
+      color: "#51cf66",
+      content: `
+    <h2>Training Completed</h2>
+
+    <p>
+      <strong>Character:</strong>
+      ${foundry.utils.escapeHTML(actor.name)}
+    </p>
+
+    <p>
+      <strong>Training:</strong>
+      ${foundry.utils.escapeHTML(item.name)}
+    </p>
+
+    <p>
+      <strong>XP Source:</strong>
+      ${foundry.utils.escapeHTML(item.xpSource ?? "")}
+    </p>
+
+    <p>
+      <strong>XP Cost:</strong>
+      ${Number(item.xpCost ?? 0)}
+    </p>
+  `
+    });
+
 
     await refreshTrainingTab(app, html, actor);
   }); // end event_TrainingComplete
@@ -1249,6 +1313,33 @@ async function openAwardExperienceDialog() {
           });
 
           ui.notifications.info("Experience awarded.");
+
+          await createCalendariaTrainingNoteAsync({
+            name: "Experience Awarded",
+            icon: "fas fa-star",
+            color: "#d4af37",
+            content: `
+    <h2>Experience Awarded</h2>
+
+    <p>
+      <strong>Awarded By:</strong>
+      ${foundry.utils.escapeHTML(game.user.name)}
+    </p>
+
+    <p>
+      <strong>Award:</strong>
+      ${foundry.utils.escapeHTML(awardRows.join(", "))}
+    </p>
+
+    <p>
+      <strong>Recipients:</strong>
+      ${foundry.utils.escapeHTML(
+                awardedActors.map(a => a.name).join(", ")
+            )}
+    </p>
+  ` });
+
+          ui.notifications.info("Calendaria event created.");
         }
       },
       cancel: {
@@ -1267,3 +1358,64 @@ async function openAwardExperienceDialog() {
     }
   }).render(true);
 }
+
+
+/* --------------------------------------------------------
+ * CALENDARIA INTEGRATION
+ * -------------------------------------------------------- */
+async function createCalendariaTrainingNoteAsync({ name, content, icon = "fas fa-graduation-cap", color = "#d4af37" }) {
+  if (!globalThis.CALENDARIA?.api?.createNote) {
+    console.log(`${MODULE_ID} | Calendaria not active; skipping calendar note.`);
+    return null;
+  }
+
+  const now = CALENDARIA.api.getCurrentDateTime();
+
+  return await CALENDARIA.api.createNote({
+    name,
+    content,
+    startDate: {
+      year: now.year,
+      month: now.month,
+      day: now.dayOfMonth ?? now.day,
+      hour: now.hour ?? 0,
+      minute: now.minute ?? 0
+    },
+    allDay: true,
+    categories: ["downtime", "training"],
+    icon,
+    color,
+    visibility: "visible",
+    displayStyle: "icon",
+    openSheet: false
+  });
+}
+
+
+//
+// await createCalendariaTrainingNoteAsync({
+//   name: `Training Started: ${item.name}`,
+//   icon: "fas fa-book-open",
+//   color: "#4a90e2",
+//   content: `
+//     <h2>Training Started</h2>
+//     <p><strong>Character:</strong> ${foundry.utils.escapeHTML(actor.name)}</p>
+//     <p><strong>Training:</strong> ${foundry.utils.escapeHTML(item.name)}</p>
+//     <p><strong>XP Source:</strong> ${foundry.utils.escapeHTML(item.xpSource ?? "")}</p>
+//     <p><strong>XP Cost:</strong> ${Number(item.xpCost ?? 0)}</p>
+//     <p><strong>Required Days:</strong> ${Number(item.trainingTime ?? 0)}</p>
+//   `
+// });
+//
+// await createCalendariaTrainingNoteAsync({
+//   name: `Training Completed: ${item.name}`,
+//   icon: "fas fa-check-circle",
+//   color: "#51cf66",
+//   content: `
+//     <h2>Training Completed</h2>
+//     <p><strong>Character:</strong> ${foundry.utils.escapeHTML(actor.name)}</p>
+//     <p><strong>Training:</strong> ${foundry.utils.escapeHTML(item.name)}</p>
+//     <p><strong>XP Source:</strong> ${foundry.utils.escapeHTML(item.xpSource ?? "")}</p>
+//     <p><strong>XP Cost:</strong> ${Number(item.xpCost ?? 0)}</p>
+//   `
+// });

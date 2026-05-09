@@ -50,17 +50,13 @@ Projects can be:
 - Completed
 - Unlocked after completion
 
-All actions generate optional in-character styled chat notifications.
+All actions generate styled chat notifications.
 
 ---
 
 ## 📝 Planned Training Entries
 
-Training entries can use the special XP source:
-
-```text
--
-```
+Training entries can use a special XP source "(planned)"
 
 This marks them as **planned training** rather than active advancement.
 
@@ -92,9 +88,9 @@ Each pool displays:
 - Spent
 - Available
 
-XP totals are calculated from active training entries.
+XP totals are calculated automatically from active training entries.
 
-The module now intentionally hides the default Exalted 3e:
+The module intentionally hides the default Exalted 3e:
 - Advancement section
 - XP inputs
 - Experience Changes list
@@ -138,14 +134,29 @@ The module posts a formatted chat card summarising:
 
 ---
 
-# 📅 Calendar Integration
+# 📅 Calendaria Integration
 
-If the **Simple Calendar** module is installed and active:
+The module integrates with the **Calendaria** module for in-world campaign chronology and downtime tracking.
 
-- New training entries use the in-world date
+When Calendaria is installed and active, the tracker automatically creates calendar events for:
 
-Otherwise:
-- Falls back to the real-world system date
+- Experience awards
+- Training started
+- Training completed
+
+These entries are added directly to the active Calendaria calendar using the current in-world date.
+
+Generated events include:
+- Character name
+- Training project name
+- XP source
+- XP cost
+- Award details
+- Storyteller attribution
+
+The integration is fully automatic and requires no additional setup beyond enabling Calendaria.
+
+If Calendaria is not installed or active, the module continues functioning normally without calendar features.
 
 ---
 
@@ -238,7 +249,7 @@ Tested with:
 - Exalted Third Edition system (AppV2)
 
 Optional integrations:
-- Simple Calendar
+- Calendaria
 
 ---
 
